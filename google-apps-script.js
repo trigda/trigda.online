@@ -1,27 +1,31 @@
 /**
  * ================================================
- * TRIGGA.AI — Google Apps Script
+ * TRIGGA.AI — Google Apps Script (FIXED VERSION)
  * Google Sheets + Gmail Integration
- * 
- * SETUP: Yeh code script.google.com par paste karo
  * ================================================
  */
-
-// ✏️ APNI EMAIL YAHAN LIKHO (Gmail notifications yahan aayenge)
+ 
 const ADMIN_EMAIL = "talhabinsaeed36@gmail.com";
-
-// ================================================
-// MAIN FUNCTION — Har form submission yahan aata hai
-// ================================================
+ 
+// ─── Sheet auto create/find ───────────────────────
+function getSpreadsheet() {
+  var files = DriveApp.getFilesByName("TRIGGA.AI Data");
+  if (files.hasNext()) {
+    return SpreadsheetApp.open(files.next());
+  } else {
+    return SpreadsheetApp.create("TRIGGA.AI Data");
+  }
+}
+ 
+// ─── MAIN FUNCTION ────────────────────────────────
 function doPost(e) {
   try {
-    const raw  = e.postData ? e.postData.contents : "";
-    const data = JSON.parse(raw);
-    const ss   = SpreadsheetApp.getActiveSpreadsheet();
-    const type = data.type || "lead";
-    const now  = new Date().toLocaleString("en-PK", { timeZone: "Asia/Karachi" });
-
-    // ─── 1. GOOGLE SHEETS MEIN SAVE ───────────────
+    var raw  = e.postData ? e.postData.contents : "{}";
+    var data = JSON.parse(raw);
+    var ss   = getSpreadsheet();
+    var type = data.type || "lead";
+    var now  = new Date().toLocaleString("en-PK", { timeZone: "Asia/Karachi" });
+ 
     if (type === "demo") {
       saveDemoBooking(ss, data, now);
     } else if (type === "contact") {
@@ -29,143 +33,101 @@ function doPost(e) {
     } else {
       saveLeadCapture(ss, data, now);
     }
-
-    // ─── 2. GMAIL NOTIFICATION BHEJO ──────────────
+ 
     sendEmailNotification(type, data, now);
-
-    return buildResponse({ success: true, message: "Data saved!" });
-
+ 
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+ 
   } catch (err) {
-    Logger.log("Error: " + err.toString());
-    return buildResponse({ success: false, error: err.toString() });
+    // Even if sheets fails — still send email
+    try {
+      GmailApp.sendEmail(
+        ADMIN_EMAIL,
+        "⚡ New Form Submission — TRIGGA.AI",
+        "New submission received!\n\nData: " + (e.postData ? e.postData.contents : "no data") + "\n\nError: " + err.toString()
+      );
+    } catch(e2) {}
+ 
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
-
+ 
 // ─── SAVE DEMO BOOKING ───────────────────────────
 function saveDemoBooking(ss, data, now) {
-  let sheet = ss.getSheetByName("📅 Demo Bookings");
+  var sheet = ss.getSheetByName("Demo Bookings");
   if (!sheet) {
-    sheet = ss.insertSheet("📅 Demo Bookings");
-    sheet.appendRow([
-      "Date/Time", "First Name", "Last Name", "Email",
-      "Phone", "Company", "Company Size", "Challenge",
-      "Demo Date", "Time Slot"
-    ]);
-    styleHeader(sheet);
+    sheet = ss.insertSheet("Demo Bookings");
+    sheet.appendRow(["Date/Time","First Name","Last Name","Email","Phone","Company","Size","Challenge","Demo Date","Time"]);
+    sheet.getRange(1,1,1,10).setBackground("#1a1a2e").setFontColor("#00e5ff").setFontWeight("bold");
+    sheet.setFrozenRows(1);
   }
-  sheet.appendRow([
-    now,
-    data.firstName || "",
-    data.lastName  || "",
-    data.email     || "",
-    data.phone     || "",
-    data.company   || "",
-    data.companySize || "",
-    data.challenge   || "",
-    data.date        || "",
-    data.time        || ""
-  ]);
+  sheet.appendRow([now, data.firstName||"", data.lastName||"", data.email||"", data.phone||"", data.company||"", data.companySize||"", data.challenge||"", data.date||"", data.time||""]);
 }
-
+ 
 // ─── SAVE CONTACT MESSAGE ────────────────────────
 function saveContactMessage(ss, data, now) {
-  let sheet = ss.getSheetByName("📧 Contact Messages");
+  var sheet = ss.getSheetByName("Contact Messages");
   if (!sheet) {
-    sheet = ss.insertSheet("📧 Contact Messages");
-    sheet.appendRow([
-      "Date/Time", "Name", "Email", "Phone",
-      "Company", "Topic", "Message", "Urgent?"
-    ]);
-    styleHeader(sheet);
+    sheet = ss.insertSheet("Contact Messages");
+    sheet.appendRow(["Date/Time","Name","Email","Phone","Company","Topic","Message","Urgent?"]);
+    sheet.getRange(1,1,1,8).setBackground("#1a1a2e").setFontColor("#00e5ff").setFontWeight("bold");
+    sheet.setFrozenRows(1);
   }
-  sheet.appendRow([
-    now,
-    data.name    || "",
-    data.email   || "",
-    data.phone   || "",
-    data.company || "",
-    data.topic   || "",
-    data.message || "",
-    data.urgent  ? "YES ⚡" : "No"
-  ]);
+  sheet.appendRow([now, data.name||"", data.email||"", data.phone||"", data.company||"", data.topic||"", data.message||"", data.urgent?"YES":"No"]);
 }
-
-// ─── SAVE LEAD CAPTURE ───────────────────────────
+ 
+// ─── SAVE LEAD ───────────────────────────────────
 function saveLeadCapture(ss, data, now) {
-  let sheet = ss.getSheetByName("🎯 Leads");
+  var sheet = ss.getSheetByName("Leads");
   if (!sheet) {
-    sheet = ss.insertSheet("🎯 Leads");
-    sheet.appendRow(["Date/Time", "Name", "Email", "Phone", "Source"]);
-    styleHeader(sheet);
+    sheet = ss.insertSheet("Leads");
+    sheet.appendRow(["Date/Time","Name","Email","Phone","Source"]);
+    sheet.getRange(1,1,1,5).setBackground("#1a1a2e").setFontColor("#00e5ff").setFontWeight("bold");
+    sheet.setFrozenRows(1);
   }
-  sheet.appendRow([
-    now,
-    data.name   || "",
-    data.email  || "",
-    data.phone  || "",
-    data.source || "Website"
-  ]);
+  sheet.appendRow([now, data.name||"", data.email||"", data.phone||"", data.source||"Website"]);
 }
-
+ 
 // ─── GMAIL NOTIFICATION ──────────────────────────
 function sendEmailNotification(type, data, now) {
-  const subjects = {
-    demo:    "🎯 New Demo Booking — TRIGGA.AI",
-    contact: "📧 New Contact Message — TRIGGA.AI",
-    lead:    "⚡ New Lead Captured — TRIGGA.AI"
+  var subjects = {
+    "demo":    "🎯 New Demo Booking — TRIGGA.AI",
+    "contact": "📧 New Contact Message — TRIGGA.AI",
+    "lead":    "⚡ New Lead Captured — TRIGGA.AI"
   };
-
-  let body = `TRIGGA.AI — New Submission\n`;
-  body    += `Time: ${now}\n`;
-  body    += `Type: ${type.toUpperCase()}\n\n`;
-  body    += `─────────────────────────\n`;
-
+ 
+  var body = "TRIGGA.AI — New " + type.toUpperCase() + " Submission\n";
+  body    += "Time: " + now + "\n\n";
+  body    += "─────────────────────────\n";
+ 
   if (type === "demo") {
-    body += `Name:    ${data.firstName} ${data.lastName}\n`;
-    body += `Email:   ${data.email}\n`;
-    body += `Phone:   ${data.phone}\n`;
-    body += `Company: ${data.company} (${data.companySize})\n`;
-    body += `Challenge: ${data.challenge}\n`;
-    body += `Demo Date: ${data.date} at ${data.time}\n`;
+    body += "Name:    " + (data.firstName||"") + " " + (data.lastName||"") + "\n";
+    body += "Email:   " + (data.email||"") + "\n";
+    body += "Phone:   " + (data.phone||"") + "\n";
+    body += "Company: " + (data.company||"") + "\n";
+    body += "Demo:    " + (data.date||"") + " at " + (data.time||"") + "\n";
   } else if (type === "contact") {
-    body += `Name:    ${data.name}\n`;
-    body += `Email:   ${data.email}\n`;
-    body += `Phone:   ${data.phone}\n`;
-    body += `Company: ${data.company}\n`;
-    body += `Topic:   ${data.topic}\n`;
-    body += `Urgent:  ${data.urgent ? "YES ⚡" : "No"}\n\n`;
-    body += `Message:\n${data.message}\n`;
+    body += "Name:    " + (data.name||"") + "\n";
+    body += "Email:   " + (data.email||"") + "\n";
+    body += "Topic:   " + (data.topic||"") + "\n";
+    body += "Urgent:  " + (data.urgent ? "YES" : "No") + "\n\n";
+    body += "Message:\n" + (data.message||"") + "\n";
   } else {
-    body += `Name:   ${data.name}\n`;
-    body += `Email:  ${data.email}\n`;
-    body += `Phone:  ${data.phone}\n`;
-    body += `Source: ${data.source}\n`;
+    body += "Name:  " + (data.name||"") + "\n";
+    body += "Email: " + (data.email||"") + "\n";
   }
-
-  body += `\n─────────────────────────\n`;
-  body += `View in Google Sheets: ${SpreadsheetApp.getActiveSpreadsheet().getUrl()}\n`;
-
-  GmailApp.sendEmail(ADMIN_EMAIL, subjects[type] || "New Submission", body);
+ 
+  GmailApp.sendEmail(ADMIN_EMAIL, subjects[type] || "New Submission — TRIGGA.AI", body);
 }
-
-// ─── STYLE HEADER ROW ────────────────────────────
-function styleHeader(sheet) {
-  const header = sheet.getRange(1, 1, 1, sheet.getLastColumn());
-  header.setBackground("#1a1a2e");
-  header.setFontColor("#00e5ff");
-  header.setFontWeight("bold");
-  sheet.setFrozenRows(1);
-}
-
-// ─── BUILD CORS RESPONSE ─────────────────────────
-function buildResponse(obj) {
-  const output = ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-  return output;
-}
-
-// ─── GET REQUEST (health check) ──────────────────
+ 
+// ─── GET (health check) ───────────────────────────
 function doGet(e) {
-  return buildResponse({ success: true, status: "TRIGGA.AI API running ✅" });
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true, status: "TRIGGA.AI running!" }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
+ 
