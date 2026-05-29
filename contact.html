@@ -264,19 +264,15 @@ async function sendContact() {
   if (!data.email.includes('@')) { statusEl.className = 'form-status error'; statusEl.textContent = '⚠️ Invalid email address.'; return; }
   const btn = event.target; btn.textContent = 'Sending...'; btn.disabled = true;
   try {
-    // Send to Google Sheets via Apps Script
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ ...data, type: 'contact' })
+    // Send to Google Sheets via GET params (CORS-free)
+    const contactParams = new URLSearchParams({
+      type: 'contact',
+      name: data.name, email: data.email,
+      phone: data.phone, company: data.company,
+      topic: data.topic, message: data.message,
+      urgent: data.urgent
     });
-    // Also try local backend if running
-    try {
-      await fetch('http://localhost:3001/api/contact', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
-      });
-    } catch(e) {}
+    await fetch(APPS_SCRIPT_URL + '?' + contactParams.toString(), { mode: 'no-cors' });
     document.getElementById('contactFormWrap').style.display='none';
     document.getElementById('contactSuccess').style.display='block';
     if (false) throw new Error();
