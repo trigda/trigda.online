@@ -304,19 +304,15 @@ async function bookDemo() {
   const btn = event.target;
   btn.textContent = 'Booking...'; btn.disabled = true;
   try {
-    // Send to Google Sheets via Apps Script
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ ...data, type: 'demo' })
+    // Send to Google Sheets via GET params (CORS-free)
+    const demoParams = new URLSearchParams({
+      type: 'demo',
+      firstName: data.firstName, lastName: data.lastName,
+      email: data.email, phone: data.phone,
+      company: data.company, companySize: data.companySize,
+      challenge: data.challenge, date: data.date, time: data.time
     });
-    // Also try local backend if running
-    try {
-      await fetch('http://localhost:3001/api/demo', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
-      });
-    } catch(e) {}
+    await fetch(APPS_SCRIPT_URL + '?' + demoParams.toString(), { mode: 'no-cors' });
     if (true) {
       document.getElementById('formSection').style.display = 'none';
       document.getElementById('successBox').style.display = 'block';
