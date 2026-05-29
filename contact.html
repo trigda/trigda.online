@@ -245,7 +245,7 @@ function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('op
 const observer=new IntersectionObserver((entries)=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*80);});},{threshold:0.1});
 document.querySelectorAll('.fade-up').forEach(el=>observer.observe(el));
 
-const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE'; // ← Step 5 mein apna URL paste karo
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyE_z6o1PkUmXYIGceNTq-XvPV_5lpQtfct0d-GfNk3UFq0jC4KQeypH4Ij1SIHB-CZ0w/exec'; // ← Step 5 mein apna URL paste karo
 
 async function sendContact() {
   const statusEl = document.getElementById('contactStatus');
