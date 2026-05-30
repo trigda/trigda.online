@@ -584,40 +584,54 @@ async function sendMessage() {
   document.getElementById('sendBtn').disabled = true;
 
   try {
+    // Build full conversation with system context
+    const messages = [
+      { role: 'user', parts: [{ text: SYSTEM_PROMPT + '\n\nUser says: ' + msg }] }
+    ];
+    
+    // Add previous conversation if any
+    if (conversationHistory.length > 2) {
+      const prevHistory = conversationHistory.slice(0, -1);
+      messages[0].parts[0].text = SYSTEM_PROMPT + '\n\nPrevious conversation:\n' + 
+        prevHistory.map(m => (m.role === 'user' ? 'User: ' : 'Assistant: ') + m.parts[0].text).join('\n') +
+        '\n\nNow answer this new message: ' + msg;
+    }
+
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: SYSTEM_PROMPT }]
-        },
-        contents: conversationHistory,
+        contents: messages,
         generationConfig: {
           temperature: 0.8,
-          maxOutputTokens: 400
-        }
+          maxOutputTokens: 400,
+          topP: 0.95
+        },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+        ]
       })
     });
 
-    const data = await res.json();
-    
-    if (data.error) {
-      throw new Error(data.error.message);
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error?.message || 'API Error');
     }
-    
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 
-      "TRIGDA pricing: Starter $29/mo, Growth $97/mo, Enterprise $1499/mo. 14-day free trial available! What else would you like to know?";
 
-    // Add AI reply to history (memory)
-    conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
+    const data = await res.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
-    // Keep history manageable (last 20 messages + system)
-    if (conversationHistory.length > 22) {
-      conversationHistory = [
-        conversationHistory[0],
-        conversationHistory[1],
-        ...conversationHistory.slice(-18)
-      ];
+    if (!reply) throw new Error('No response');
+
+    // Save to history
+    conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
+    if (conversationHistory.length > 20) {
+      conversationHistory = conversationHistory.slice(-16);
     }
 
     document.getElementById('typingIndicator').classList.remove('show');
@@ -632,9 +646,31 @@ async function sendMessage() {
     }
 
   } catch (err) {
-    console.error('Gemini error:', err);
+    console.error('Gemini error:', err.message);
     document.getElementById('typingIndicator').classList.remove('show');
-    appendMessage('ai', 'Sorry, connection issue. Please try again!');
+    // Smart fallback based on question
+    const q = msg.toLowerCase();
+    let reply = 'TRIGDA is an AI business automation platform. Pricing from $29/mo. 14-day free trial!';
+    if (q.includes('price') || q.includes('cost') || q.includes('much') || q.includes('plan')) 
+      reply = 'TRIGDA Plans:\n• Starter: $29/mo — 1 AI agent, 500 leads/month\n• Growth: $97/mo — 3 AI agents, 5000 leads\n• Enterprise: $1499/mo — Unlimited everything\nAll plans: 14-day free trial, no credit card!';
+    else if (q.includes('company') || q.includes('name') || q.includes('who') || q.includes('what is'))
+      reply = 'TRIGDA is an AI-powered business automation platform. We help businesses generate leads, automate sales, and grow revenue 24/7 using artificial intelligence.';
+    else if (q.includes('feature') || q.includes('what do') || q.includes('service'))
+      reply = 'TRIGDA features:\n• AI Lead Generation (24.8% conversion)\n• AI Chatbot (0.8s response time)\n• Email Marketing Automation\n• Workflow Automation\n• 200+ integrations\n• 24/7 AI Support';
+    else if (q.includes('demo') || q.includes('trial') || q.includes('free'))
+      reply = 'Yes! We offer a FREE 14-day trial — no credit card needed. You can also book a free 30-min strategy demo with our team!';
+    else if (q.includes('email') || q.includes('contact'))
+      reply = 'Contact us at hello@trigda.com or book a free demo on our website. We reply within 4 hours!';
+    else if (q.includes('hi') || q.includes('hello') || q.includes('hey'))
+      reply = 'Hey! 👋 Welcome to TRIGDA! I am your AI assistant. Ask me anything about our AI automation, pricing, features, or anything else!';
+    appendMessage('ai', reply);
+    
+    if (msgCount >= MSG_LIMIT) {
+      setTimeout(() => {
+        document.getElementById('timeLeftDisplay').textContent = getTimeLeft();
+        document.getElementById('chatLimitOverlay').classList.add('show');
+      }, 1500);
+    }
   }
 
   document.getElementById('sendBtn').disabled = false;
