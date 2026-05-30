@@ -99,7 +99,7 @@
 .testimonials-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
 
 /* Pricing - Lead Gen Only */
-.pricing-single { max-width:520px; margin:3rem auto 0; }
+.pricing-single { max-width:520px; margin:3rem auto 0; } .pricing-single .pricing-card { position:relative; }
 
 /* Final CTA */
 .final-cta { background:var(--bg-secondary); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
@@ -364,11 +364,14 @@
       <p class="section-sub">Start generating qualified leads today. Simple, transparent pricing — no hidden fees.</p>
     </div>
     <div class="pricing-single fade-up">
-      <div class="card pricing-card featured" style="margin-top:3rem;">
-        <div class="pricing-badge">⭐ Best Value — Lead Generation</div>
+      <div class="card pricing-card featured" style="margin-top:3.5rem;padding-top:2.5rem;">
+        <!-- Badge -->
+        <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#007bff,#00e5ff);color:#fff;font-size:.72rem;font-weight:800;padding:.4rem 1.4rem;border-radius:50px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 15px rgba(0,150,255,0.4);">
+          ⭐ Best Value — Lead Generation
+        </div>
         <p style="font-size:.78rem;font-weight:700;color:var(--accent-cyan);letter-spacing:1px;text-transform:uppercase;margin-bottom:.5rem;">GROWTH PLAN</p>
         <div class="pricing-price">$29<span>/mo</span></div>
-        <p style="color:var(--text-secondary);font-size:.88rem;margin-bottom:.5rem;">Everything you need to generate, qualify, and convert leads on autopilot.</p>
+        <p style="color:var(--text-secondary);font-size:.88rem;margin-bottom:1rem;">Everything you need to generate, qualify, and convert leads on autopilot.</p>
         <ul class="pricing-list">
           <li>AI Lead Capture & Qualification</li>
           <li>Up to 500 qualified leads/month</li>
@@ -378,10 +381,10 @@
           <li>50+ CRM integrations</li>
           <li>14-day free trial included</li>
         </ul>
-        <a href="free-demo.html" class="btn-primary" style="width:100%;display:block;text-align:center;padding:.9rem;font-size:1rem;">Start Free Trial</a>
+        <a href="free-demo.html" class="btn-primary" style="width:100%;display:block;text-align:center;padding:.9rem;font-size:1rem;">🚀 Start Free Trial</a>
         <p style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:.8rem;">No credit card required · Cancel anytime</p>
         <div style="text-align:center;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
-          <a href="pricing.html" style="color:var(--accent);font-size:.82rem;font-weight:600;">See all plans including AI Chatbot & Automation →</a>
+          <a href="pricing.html" style="color:var(--accent-cyan);font-size:.85rem;font-weight:600;text-decoration:underline;text-underline-offset:3px;">See all plans including AI Chatbot & Automation →</a>
         </div>
       </div>
     </div>
