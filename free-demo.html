@@ -271,7 +271,7 @@ function selectTime(el) {
   document.getElementById('selectedTime').value = el.textContent;
 }
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyE_z6o1PkUmXYIGceNTq-XvPV_5lpQtfct0d-GfNk3UFq0jC4KQeypH4Ij1SIHB-CZ0w/exec'; // ← Step 5 mein apna URL paste karo
+const WEB3FORMS_KEY = '45774f61-6b96-46f5-91db-dbd5ca271e4b'; // ← web3forms.com sy milega
 
 async function bookDemo() {
   const statusEl = document.getElementById('demoStatus');
@@ -304,16 +304,25 @@ async function bookDemo() {
   const btn = event.target;
   btn.textContent = 'Booking...'; btn.disabled = true;
   try {
-    // Send to Google Sheets via GET params (CORS-free)
-    const demoParams = new URLSearchParams({
-      type: 'demo',
-      firstName: data.firstName, lastName: data.lastName,
-      email: data.email, phone: data.phone,
-      company: data.company, companySize: data.companySize,
-      challenge: data.challenge, date: data.date, time: data.time
+    // Web3Forms - 100% working email service
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        subject: '🎯 New Demo Booking — TRIGGA.AI',
+        from_name: 'TRIGGA.AI Website',
+        name: data.firstName + ' ' + data.lastName,
+        email: data.email,
+        phone: data.phone,
+        company: data.company + ' (' + data.companySize + ')',
+        challenge: data.challenge,
+        demo_date: data.date + ' at ' + data.time,
+        message: 'New demo booking from TRIGGA.AI website'
+      })
     });
-    await fetch(APPS_SCRIPT_URL + '?' + demoParams.toString(), { mode: 'no-cors' });
-    if (true) {
+    const result = await res.json();
+    if (result.success) {
       document.getElementById('formSection').style.display = 'none';
       document.getElementById('successBox').style.display = 'block';
     } else throw new Error();
