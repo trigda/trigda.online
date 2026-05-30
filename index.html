@@ -296,7 +296,7 @@
             <div class="chat-avatar ai">AI</div>
             <div class="chat-bubble ai-bubble"><span></span><span></span><span></span></div>
           </div>
-          <div class="chat-msg-counter">Messages used: <span id="msgCount">0</span>/5</div>
+          <div class="chat-msg-counter">Messages used: <span id="msgCount">0</span>/10</div>
           <div class="chat-bar">
             <input class="chat-input-field" id="chatInput" placeholder="Ask about pricing, features, demo..." onkeydown="if(event.key==='Enter')sendMessage()">
             <button class="btn-primary btn-sm" onclick="sendMessage()" id="sendBtn">Send</button>
@@ -464,7 +464,7 @@
 
 <script>
 const GEMINI_KEY = 'AIzaSyAIuj5fod_xs25szgWxho2UzAG3elLBhKY';
-const MSG_LIMIT = 5;
+const MSG_LIMIT = 10;
 const COOLDOWN_HOURS = 12;
 
 // Load/reset message count from localStorage
@@ -728,7 +728,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   <div class="chat-limit-box">
     <span class="limit-icon">🚀</span>
     <h3>Free Message Limit Reached!</h3>
-    <p>You've used your 5 free messages. Your limit will reset in <strong id="timeLeftDisplay" style="color:var(--accent-cyan);">12h 0m</strong>. Or book a free demo to get personalized answers from our expert team!</p>
+    <p>You've used your 10 free messages. Your limit will reset in <strong id="timeLeftDisplay" style="color:var(--accent-cyan);">12h 0m</strong>. Or book a free demo to get personalized answers from our expert team!</p>
     <a href="free-demo.html" class="btn-primary btn-lg" style="display:block;width:100%;text-align:center;margin-bottom:.8rem;">
       🎯 Book Free Demo
     </a>
