@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact — TRIGGA.AI</title>
+<title>Contact — TRIGDA</title>
 <link rel="stylesheet" href="styles.css">
 <style>
 .contact-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:4rem; align-items:start; }
@@ -27,7 +27,7 @@
 <body>
 
 <nav class="navbar" id="navbar">
-  <a href="index.html" class="nav-logo">TRIGGA<span>.AI</span></a>
+  <a href="index.html" class="nav-logo">TRIGDA</a>
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="ai-agent.html">AI Agent</a>
@@ -71,7 +71,7 @@
             <div class="contact-item-icon">📧</div>
             <div>
               <h4>Email Us</h4>
-              <a href="mailto:hello@trigga.ai">hello@trigga.ai</a>
+              <a href="mailto:hello@trigda">hello@trigda</a>
               <p>We reply within 4 business hours.</p>
             </div>
           </div>
@@ -160,7 +160,7 @@
 
           <div class="form-group">
             <label class="form-label">Message *</label>
-            <textarea class="form-textarea" id="cfMessage" placeholder="Tell us about your business and what you're looking to achieve with TRIGGA.AI..."></textarea>
+            <textarea class="form-textarea" id="cfMessage" placeholder="Tell us about your business and what you're looking to achieve with TRIGDA..."></textarea>
           </div>
 
           <div class="form-group">
@@ -200,7 +200,7 @@
       <a href="free-demo.html" class="card" style="text-align:center;padding:2rem;display:block;">
         <div style="font-size:2rem;margin-bottom:1rem;">🎯</div>
         <h3 style="font-size:1rem;font-weight:700;margin-bottom:.5rem;">Book a Free Demo</h3>
-        <p style="font-size:.85rem;color:var(--text-secondary);">See TRIGGA.AI in action with a personalized 30-minute demo session.</p>
+        <p style="font-size:.85rem;color:var(--text-secondary);">See TRIGDA in action with a personalized 30-minute demo session.</p>
       </a>
       <a href="pricing.html" class="card" style="text-align:center;padding:2rem;display:block;">
         <div style="font-size:2rem;margin-bottom:1rem;">💰</div>
@@ -219,7 +219,7 @@
 <footer class="footer">
   <div class="container">
     <div class="footer-grid">
-      <div><div class="footer-logo">TRIGGA<span>.AI</span></div><p class="footer-desc">The AI-powered growth platform that puts your business on autopilot.</p>
+      <div><div class="footer-logo">TRIGDA</div><p class="footer-desc">The AI-powered growth platform that puts your business on autopilot.</p>
         <div class="social-links" style="margin-top:1.5rem;">
           <a href="#" class="social-link">𝕏</a><a href="#" class="social-link">in</a><a href="#" class="social-link">fb</a>
         </div>
@@ -235,7 +235,7 @@
         <li><a href="terms-of-service.html">Terms of Service</a></li>
       </ul></div>
     </div>
-    <div class="footer-bottom"><p>© 2025 TRIGGA.AI — Powered by NEXGEN. All rights reserved.</p></div>
+    <div class="footer-bottom"><p>© 2025 TRIGDA — Powered by NEXGEN. All rights reserved.</p></div>
   </div>
 </footer>
 
@@ -264,15 +264,16 @@ async function sendContact() {
   if (!data.email.includes('@')) { statusEl.className = 'form-status error'; statusEl.textContent = '⚠️ Invalid email address.'; return; }
   const btn = event.target; btn.textContent = 'Sending...'; btn.disabled = true;
   try {
-    // Google Sheets save
-    const sheetsParams = new URLSearchParams({
-      type: 'contact',
-      name: data.name, email: data.email,
-      phone: data.phone, company: data.company,
-      topic: data.topic, message: data.message,
-      urgent: data.urgent
-    });
-    fetch('https://script.google.com/macros/s/AKfycbwaA2jW_2MApAqLihDxfO-LKpjKrxFlMK3nhjiQbTDl1tj5Gig-kURQilklfba0_mQGNg/exec?' + sheetsParams.toString(), { mode: 'no-cors' });
+    // Google Sheets save (try-catch so email always works)
+    try {
+      const sp = new URLSearchParams({
+        type:'contact', name:data.name||'', email:data.email||'',
+        phone:data.phone||'', company:data.company||'',
+        topic:data.topic||'', message:data.message||'',
+        urgent:String(data.urgent||false)
+      });
+      fetch('https://script.google.com/macros/s/AKfycbwaA2jW_2MApAqLihDxfO-LKpjKrxFlMK3nhjiQbTDl1tj5Gig-kURQilklfba0_mQGNg/exec?' + sp.toString(), { mode:'no-cors' });
+    } catch(sheetErr) {}
 
     // Web3Forms - Email
     const res = await fetch('https://api.web3forms.com/submit', {
@@ -280,8 +281,8 @@ async function sendContact() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         access_key: WEB3FORMS_KEY,
-        subject: '📧 New Contact Message — TRIGGA.AI [' + data.topic + ']',
-        from_name: 'TRIGGA.AI Website',
+        subject: '📧 New Contact Message — TRIGDA [' + data.topic + ']',
+        from_name: 'TRIGDA Website',
         name: data.name,
         email: data.email,
         phone: data.phone,
