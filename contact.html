@@ -264,7 +264,17 @@ async function sendContact() {
   if (!data.email.includes('@')) { statusEl.className = 'form-status error'; statusEl.textContent = '⚠️ Invalid email address.'; return; }
   const btn = event.target; btn.textContent = 'Sending...'; btn.disabled = true;
   try {
-    // Web3Forms - 100% working email service
+    // Google Sheets save
+    const sheetsParams = new URLSearchParams({
+      type: 'contact',
+      name: data.name, email: data.email,
+      phone: data.phone, company: data.company,
+      topic: data.topic, message: data.message,
+      urgent: data.urgent
+    });
+    fetch('https://script.google.com/macros/s/AKfycbwaA2jW_2MApAqLihDxfO-LKpjKrxFlMK3nhjiQbTDl1tj5Gig-kURQilklfba0_mQGNg/exec?' + sheetsParams.toString(), { mode: 'no-cors' });
+
+    // Web3Forms - Email
     const res = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
