@@ -245,7 +245,7 @@ function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('op
 const observer=new IntersectionObserver((entries)=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*80);});},{threshold:0.1});
 document.querySelectorAll('.fade-up').forEach(el=>observer.observe(el));
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyE_z6o1PkUmXYIGceNTq-XvPV_5lpQtfct0d-GfNk3UFq0jC4KQeypH4Ij1SIHB-CZ0w/exec'; // ← Step 5 mein apna URL paste karo
+const WEB3FORMS_KEY = '45774f61-6b96-46f5-91db-dbd5ca271e4b'; // ← web3forms.com sy milega
 
 async function sendContact() {
   const statusEl = document.getElementById('contactStatus');
@@ -264,17 +264,28 @@ async function sendContact() {
   if (!data.email.includes('@')) { statusEl.className = 'form-status error'; statusEl.textContent = '⚠️ Invalid email address.'; return; }
   const btn = event.target; btn.textContent = 'Sending...'; btn.disabled = true;
   try {
-    // Send to Google Sheets via GET params (CORS-free)
-    const contactParams = new URLSearchParams({
-      type: 'contact',
-      name: data.name, email: data.email,
-      phone: data.phone, company: data.company,
-      topic: data.topic, message: data.message,
-      urgent: data.urgent
+    // Web3Forms - 100% working email service
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        subject: '📧 New Contact Message — TRIGGA.AI [' + data.topic + ']',
+        from_name: 'TRIGGA.AI Website',
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        company: data.company,
+        topic: data.topic,
+        urgent: data.urgent ? 'YES ⚡' : 'No',
+        message: data.message
+      })
     });
-    await fetch(APPS_SCRIPT_URL + '?' + contactParams.toString(), { mode: 'no-cors' });
-    document.getElementById('contactFormWrap').style.display='none';
-    document.getElementById('contactSuccess').style.display='block';
+    const result = await res.json();
+    if (result.success) {
+      document.getElementById('contactFormWrap').style.display='none';
+      document.getElementById('contactSuccess').style.display='block';
+    } else throw new Error();
     if (false) throw new Error();
   } catch {
     document.getElementById('contactFormWrap').style.display='none'; document.getElementById('contactSuccess').style.display='block';
