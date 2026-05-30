@@ -296,6 +296,7 @@
             <div class="chat-avatar ai">AI</div>
             <div class="chat-bubble ai-bubble"><span></span><span></span><span></span></div>
           </div>
+          <div class="chat-msg-counter">Messages used: <span id="msgCount">0</span>/5</div>
           <div class="chat-bar">
             <input class="chat-input-field" id="chatInput" placeholder="Ask about pricing, features, demo..." onkeydown="if(event.key==='Enter')sendMessage()">
             <button class="btn-primary btn-sm" onclick="sendMessage()" id="sendBtn">Send</button>
@@ -463,7 +464,40 @@
 
 <script>
 const GEMINI_KEY = 'AIzaSyAIuj5fod_xs25szgWxho2UzAG3elLBhKY';
-const SYSTEM_PROMPT = `You are TRIGDA's smart AI assistant. Answer every question directly and helpfully. Here is all information about TRIGDA:
+const MSG_LIMIT = 5;
+const COOLDOWN_HOURS = 12;
+
+// Load/reset message count from localStorage
+function getMsgCount() {
+  const saved = JSON.parse(localStorage.getItem('trigda_chat') || '{}');
+  const now = Date.now();
+  const elapsed = (now - (saved.timestamp || 0)) / (1000 * 60 * 60); // hours
+  if (elapsed >= COOLDOWN_HOURS) {
+    // Reset after 12 hours
+    localStorage.setItem('trigda_chat', JSON.stringify({ count: 0, timestamp: now }));
+    return 0;
+  }
+  return saved.count || 0;
+}
+
+function saveMsgCount(count) {
+  const saved = JSON.parse(localStorage.getItem('trigda_chat') || '{}');
+  const timestamp = saved.timestamp || Date.now();
+  localStorage.setItem('trigda_chat', JSON.stringify({ count, timestamp }));
+}
+
+function getTimeLeft() {
+  const saved = JSON.parse(localStorage.getItem('trigda_chat') || '{}');
+  const now = Date.now();
+  const elapsed = (now - (saved.timestamp || 0)) / (1000 * 60 * 60);
+  const left = COOLDOWN_HOURS - elapsed;
+  const hrs = Math.floor(left);
+  const mins = Math.floor((left - hrs) * 60);
+  return hrs + 'h ' + mins + 'm';
+}
+
+let msgCount = getMsgCount();
+const SYSTEM_PROMPT = `You are TRIGDA's intelligent AI assistant — like ChatGPT but specialized for TRIGDA. You have two roles: 1) Answer ANY general question (science, tech, business, life advice, coding, etc.) like a smart AI assistant would. 2) Have deep knowledge about TRIGDA to help potential customers. Always be helpful, friendly, and give complete answers. Here is all information about TRIGDA:
 
 COMPANY: TRIGDA - AI-powered business automation platform
 WEBSITE: trigda.online
@@ -524,10 +558,29 @@ let conversationHistory = [
 ];
 
 async function sendMessage() {
+  // Check message limit
+  msgCount = getMsgCount(); // re-check in case 12hr passed
+  if (msgCount >= MSG_LIMIT) {
+    document.getElementById('timeLeftDisplay').textContent = getTimeLeft();
+    document.getElementById('chatLimitOverlay').classList.add('show');
+    return;
+  }
+
   const input = document.getElementById('chatInput');
   const msg = input.value.trim();
   if (!msg) return;
   input.value = '';
+
+  // Increment counter
+  msgCount++;
+  saveMsgCount(msgCount);
+  document.getElementById('msgCount').textContent = msgCount;
+  if (msgCount >= MSG_LIMIT) {
+    document.getElementById('chatInput').placeholder = 'Limit reached! Come back in 12 hours.';
+    document.getElementById('chatInput').disabled = true;
+    document.getElementById('sendBtn').textContent = 'Book Demo';
+    document.getElementById('sendBtn').onclick = () => window.location.href = 'free-demo.html';
+  }
 
   // Add user message to UI
   appendMessage('user', msg);
@@ -575,6 +628,14 @@ async function sendMessage() {
 
     document.getElementById('typingIndicator').classList.remove('show');
     appendMessage('ai', reply);
+    
+    // Show popup after limit
+    if (msgCount >= MSG_LIMIT) {
+      setTimeout(() => {
+        document.getElementById('timeLeftDisplay').textContent = getTimeLeft();
+        document.getElementById('chatLimitOverlay').classList.add('show');
+      }, 1500);
+    }
 
   } catch (err) {
     console.error('Gemini error:', err);
@@ -629,10 +690,39 @@ function toggleFAQ(btn) {
   if (!isOpen) { item.classList.add('open'); answer.style.maxHeight = answer.scrollHeight + 'px'; }
 }
 
+// Init chat counter on load
+document.addEventListener('DOMContentLoaded', () => {
+  const count = getMsgCount();
+  msgCount = count;
+  document.getElementById('msgCount').textContent = count;
+  if (count >= MSG_LIMIT) {
+    document.getElementById('chatInput').placeholder = 'Limit reached! Come back in 12 hours.';
+    document.getElementById('chatInput').disabled = true;
+    document.getElementById('sendBtn').textContent = 'Book Demo';
+    document.getElementById('sendBtn').onclick = () => window.location.href = 'free-demo.html';
+  }
+});
+
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => { if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 80); });
 }, { threshold: 0.1 });
 document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 </script>
+<!-- CHAT LIMIT POPUP -->
+<div class="chat-limit-overlay" id="chatLimitOverlay">
+  <div class="chat-limit-box">
+    <span class="limit-icon">🚀</span>
+    <h3>Free Message Limit Reached!</h3>
+    <p>You've used your 5 free messages. Your limit will reset in <strong id="timeLeftDisplay" style="color:var(--accent-cyan);">12h 0m</strong>. Or book a free demo to get personalized answers from our expert team!</p>
+    <a href="free-demo.html" class="btn-primary btn-lg" style="display:block;width:100%;text-align:center;margin-bottom:.8rem;">
+      🎯 Book Free Demo
+    </a>
+    <button onclick="document.getElementById('chatLimitOverlay').classList.remove('show')" 
+      style="background:none;border:none;color:var(--text-muted);font-size:.82rem;cursor:pointer;font-family:inherit;">
+      Maybe later
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
