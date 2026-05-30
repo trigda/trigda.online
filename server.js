@@ -1,5 +1,5 @@
 /**
- * TRIGGA.AI — Backend Server
+ * TRIGDA — Backend Server
  * Node.js + Express
  * Port: 3001
  */
@@ -51,7 +51,7 @@ function isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); 
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'TRIGGA.AI API running ✅', timestamp: new Date().toISOString() });
+  res.json({ success: true, message: 'TRIGDA API running ✅', timestamp: new Date().toISOString() });
 });
 
 // ── Book a Demo ──────────────────────────────────────────────
@@ -202,7 +202,7 @@ app.get('*', (req, res) => {
 
 // ─── Start ────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`\n🚀 TRIGGA.AI Server running on http://localhost:${PORT}`);
+  console.log(`\n🚀 TRIGDA Server running on http://localhost:${PORT}`);
   console.log(`📊 Admin endpoints:`);
   console.log(`   GET  /api/health`);
   console.log(`   GET  /api/admin/stats`);
