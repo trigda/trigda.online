@@ -545,17 +545,8 @@ Rules:
 - Keep answers clear and to the point
 - Only suggest demo booking AFTER answering the question`;
 
-// Conversation history for memory
-let conversationHistory = [
-  {
-    role: 'user',
-    parts: [{ text: SYSTEM_PROMPT }]
-  },
-  {
-    role: 'model', 
-    parts: [{ text: "Understood! I am TRIGDA's AI assistant. I have full knowledge about TRIGDA's products, pricing, and services. I will answer every question directly and helpfully." }]
-  }
-];
+// Conversation history — only user/model turns
+let conversationHistory = [];
 
 async function sendMessage() {
   // Check message limit
@@ -597,10 +588,13 @@ async function sendMessage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        system_instruction: {
+          parts: [{ text: SYSTEM_PROMPT }]
+        },
         contents: conversationHistory,
         generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 300,
+          temperature: 0.8,
+          maxOutputTokens: 400
         }
       })
     });
@@ -640,22 +634,7 @@ async function sendMessage() {
   } catch (err) {
     console.error('Gemini error:', err);
     document.getElementById('typingIndicator').classList.remove('show');
-    // Fallback smart answers
-    const fallbacks = {
-      'price': 'TRIGDA pricing: Starter $29/mo, Growth $97/mo, Enterprise $1499/mo. All plans include 14-day free trial!',
-      'cost': 'Plans start from $29/mo. Starter: $29, Growth: $97, Enterprise: $1499. No credit card needed for trial!',
-      'feature': 'TRIGDA offers: AI Lead Generation, AI Chatbot (0.8s response), Email Automation, Workflow Automation, 200+ integrations!',
-      'company': 'TRIGDA is an AI-powered business automation platform that helps businesses generate leads and automate sales 24/7.',
-      'demo': 'Book a free 30-minute demo at our Free Demo page. No cost, no commitment!',
-      'trial': '14-day free trial available on all plans. No credit card required!',
-      'contact': 'Reach us at hello@trigda.com or book a free demo on our website!'
-    };
-    const lower = msg.toLowerCase();
-    let fallbackReply = 'TRIGDA is an AI business automation platform. Pricing starts at $29/mo with a 14-day free trial. Ask me anything specific!';
-    for (const [key, val] of Object.entries(fallbacks)) {
-      if (lower.includes(key)) { fallbackReply = val; break; }
-    }
-    appendMessage('ai', fallbackReply);
+    appendMessage('ai', 'Sorry, connection issue. Please try again!');
   }
 
   document.getElementById('sendBtn').disabled = false;
