@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Demo — TRIGGA.AI</title>
+<title>Free Demo — TRIGDA</title>
 <link rel="stylesheet" href="styles.css">
 <style>
 .demo-grid { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:start; }
@@ -38,7 +38,7 @@
 <body>
 
 <nav class="navbar" id="navbar">
-  <a href="index.html" class="nav-logo">TRIGGA<span>.AI</span></a>
+  <a href="index.html" class="nav-logo">TRIGDA</a>
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="ai-agent.html">AI Agent</a>
@@ -64,7 +64,7 @@
     <div class="fade-up">
       <div class="section-tag" style="margin:0 auto 1.2rem;">🎯 Free Demo</div>
       <h1 class="section-title" style="font-size:clamp(2rem,5vw,3rem);">Book Your <span class="highlight">Free Strategy Demo</span></h1>
-      <p style="color:var(--text-secondary);max-width:560px;margin:.8rem auto;font-size:1rem;">See exactly how TRIGGA.AI will grow your business. Our specialists will build you a custom automation plan — 100% free, no strings attached.</p>
+      <p style="color:var(--text-secondary);max-width:560px;margin:.8rem auto;font-size:1rem;">See exactly how TRIGDA will grow your business. Our specialists will build you a custom automation plan — 100% free, no strings attached.</p>
     </div>
   </div>
 </section>
@@ -103,7 +103,7 @@
             <div class="benefit-icon">💰</div>
             <div>
               <h4>ROI Calculator</h4>
-              <p>We'll run the numbers and show you exactly how much time and money TRIGGA.AI will save your team in the first 90 days.</p>
+              <p>We'll run the numbers and show you exactly how much time and money TRIGDA will save your team in the first 90 days.</p>
             </div>
           </div>
           <div class="benefit-row">
@@ -223,7 +223,7 @@
           <div class="success-box" id="successBox">
             <div class="check">🎉</div>
             <h3>Demo Booked Successfully!</h3>
-            <p>We've sent a confirmation to your email. A TRIGGA.AI specialist will join you at your chosen time.</p>
+            <p>We've sent a confirmation to your email. A TRIGDA specialist will join you at your chosen time.</p>
             <div style="margin-top:1.5rem;padding:1rem;background:var(--accent-dim);border-radius:var(--r-md);border:1px solid var(--border);">
               <p style="font-size:.85rem;color:var(--accent-cyan);font-weight:600;">📧 Check your inbox for the calendar invite + Zoom link.</p>
             </div>
@@ -238,7 +238,7 @@
 <footer class="footer">
   <div class="container">
     <div class="footer-grid">
-      <div><div class="footer-logo">TRIGGA<span>.AI</span></div><p class="footer-desc">The AI-powered growth platform that puts your business on autopilot.</p></div>
+      <div><div class="footer-logo">TRIGDA</div><p class="footer-desc">The AI-powered growth platform that puts your business on autopilot.</p></div>
       <div class="footer-col"><h4>Product</h4><ul><li><a href="ai-agent.html">AI Agent</a></li><li><a href="lead-generation.html">Lead Generation</a></li><li><a href="ai-automation.html">AI Automation</a></li><li><a href="pricing.html">Pricing</a></li></ul></div>
       <div class="footer-col"><h4>Company</h4><ul>
         <li><a href="blog.html">Blog</a></li>
@@ -250,7 +250,7 @@
         <li><a href="terms-of-service.html">Terms of Service</a></li>
       </ul></div>
     </div>
-    <div class="footer-bottom"><p>© 2025 TRIGGA.AI — Powered by NEXGEN. All rights reserved.</p></div>
+    <div class="footer-bottom"><p>© 2025 TRIGDA — Powered by NEXGEN. All rights reserved.</p></div>
   </div>
 </footer>
 
@@ -304,15 +304,16 @@ async function bookDemo() {
   const btn = event.target;
   btn.textContent = 'Booking...'; btn.disabled = true;
   try {
-    // Google Sheets save
-    const sheetsParams = new URLSearchParams({
-      type: 'demo',
-      firstName: data.firstName, lastName: data.lastName,
-      email: data.email, phone: data.phone,
-      company: data.company, companySize: data.companySize,
-      challenge: data.challenge, date: data.date, time: data.time
-    });
-    fetch('https://script.google.com/macros/s/AKfycbwaA2jW_2MApAqLihDxfO-LKpjKrxFlMK3nhjiQbTDl1tj5Gig-kURQilklfba0_mQGNg/exec?' + sheetsParams.toString(), { mode: 'no-cors' });
+    // Google Sheets save (try-catch so email always works)
+    try {
+      const sp = new URLSearchParams({
+        type:'demo', firstName:data.firstName||'', lastName:data.lastName||'',
+        email:data.email||'', phone:data.phone||'', company:data.company||'',
+        companySize:data.companySize||'', challenge:data.challenge||'',
+        date:data.date||'', time:data.time||''
+      });
+      fetch('https://script.google.com/macros/s/AKfycbwaA2jW_2MApAqLihDxfO-LKpjKrxFlMK3nhjiQbTDl1tj5Gig-kURQilklfba0_mQGNg/exec?' + sp.toString(), { mode:'no-cors' });
+    } catch(sheetErr) {}
 
     // Web3Forms - Email
     const res = await fetch('https://api.web3forms.com/submit', {
@@ -320,15 +321,15 @@ async function bookDemo() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         access_key: WEB3FORMS_KEY,
-        subject: '🎯 New Demo Booking — TRIGGA.AI',
-        from_name: 'TRIGGA.AI Website',
+        subject: '🎯 New Demo Booking — TRIGDA',
+        from_name: 'TRIGDA Website',
         name: data.firstName + ' ' + data.lastName,
         email: data.email,
         phone: data.phone,
         company: data.company + ' (' + data.companySize + ')',
         challenge: data.challenge,
         demo_date: data.date + ' at ' + data.time,
-        message: 'New demo booking from TRIGGA.AI website'
+        message: 'New demo booking from TRIGDA website'
       })
     });
     const result = await res.json();
