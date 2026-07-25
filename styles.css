@@ -289,21 +289,15 @@ button { cursor:pointer; font-family:inherit; border:none; outline:none; }
 @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
 
 /* ===== PRICING CARDS ===== */
-.pricing-card { position:relative; transition:.3s; }
+/* Fix: badge ko clip hone se bachana */
+.pricing-card {
+  overflow: visible;
+}
 .pricing-card.featured {
-  border-color:var(--accent);
-  box-shadow:0 0 40px rgba(0,170,255,0.18);
+  margin-top: 16px; /* badge ke liye upar jagah */
 }
 .pricing-badge {
-  position:absolute; top:-14px; left:50%; transform:translateX(-50%);
-  background:var(--btn-grad); color:#fff; font-size:.72rem; font-weight:700;
-  padding:.3rem 1rem; border-radius:var(--r-xl); letter-spacing:.8px; text-transform:uppercase;
-  white-space:nowrap;
-}
-.pricing-price {
-  font-family:'Sora',sans-serif; font-size:3rem; font-weight:800;
-  background:var(--text-grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  line-height:1; margin:1rem 0 .3rem;
+  z-index: 5; /* card content ke upar dikhe */
 }
 .pricing-price span { font-size:1rem; font-weight:500; color:var(--text-secondary); }
 .pricing-list { list-style:none; display:flex; flex-direction:column; gap:.8rem; margin:1.5rem 0 2rem; }
