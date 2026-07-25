@@ -295,7 +295,7 @@ button { cursor:pointer; font-family:inherit; border:none; outline:none; }
   box-shadow:0 0 40px rgba(0,170,255,0.18);
 }
 .pricing-badge {
-  position:absolute; top:-20px; left:50%; transform:translateX(-50%);
+  position:absolute; top:-10px; left:50%; transform:translateX(-50%);
   background:var(--btn-grad); color:#fff; font-size:.72rem; font-weight:700;
   padding:.3rem 1rem; border-radius:var(--r-xl); letter-spacing:.8px; text-transform:uppercase;
   white-space:nowrap;
